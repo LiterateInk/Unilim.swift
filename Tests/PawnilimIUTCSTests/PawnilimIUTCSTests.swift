@@ -10,9 +10,7 @@ struct PawnilimIUTCSTests {
       throw TestError.resourceNotFound
     }
 
-    let elements = try parsePDF(from: pdfURL)
-    let timetable = try getTimetable(using: elements)
-
+    let timetable = try parseTimetable(from: pdfURL)
     #expect(!timetable.lessons.isEmpty)
   }
 }
