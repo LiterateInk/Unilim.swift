@@ -4,30 +4,30 @@
 import PackageDescription
 
 let package = Package(
-  name: "Pawnilim",
+  name: "Unilim",
   platforms: [
     .macOS(.v13),
     .iOS(.v15),
   ],
   products: [
-    .library(name: "PawnilimIUTCS", targets: ["PawnilimIUTCS"]),
-    .library(name: "PawnilimIUT", targets: ["PawnilimIUT"]),
-    .library(name: "Pawnilim", targets: ["Pawnilim"]),
+    .library(name: "UnilimIUTCS", targets: ["UnilimIUTCS"]),
+    .library(name: "UnilimIUT", targets: ["UnilimIUT"]),
+    .library(name: "Unilim", targets: ["Unilim"]),
   ],
   targets: [
     .target(
-      name: "PawnilimIUTCS",
+      name: "UnilimIUTCS",
       linkerSettings: [
         .linkedFramework("CoreGraphics")
       ]
     ),
     .testTarget(
-      name: "PawnilimIUTCSTests", dependencies: ["PawnilimIUTCS"], resources: [.copy("Resources")]),
+      name: "UnilimIUTCSTests", dependencies: ["UnilimIUTCS"], resources: [.copy("Resources")]),
     .target(
-      name: "PawnilimIUT",
+      name: "UnilimIUT",
     ),
     .target(
-      name: "Pawnilim",
+      name: "Unilim",
     ),
   ]
 )
