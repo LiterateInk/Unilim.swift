@@ -18,7 +18,7 @@ public struct OnlineTimetableFileEntry: Comparable {
   public let fromYear: TimetableYear
 
   /// Direct link to access the timetable.
-  public let link: String
+  public let url: URL
 
   /// Initialize a new timetable entry.
   ///
@@ -29,12 +29,17 @@ public struct OnlineTimetableFileEntry: Comparable {
   internal init(fileName: String, date: String, fromYear: TimetableYear) {
     self.fileName = fileName
     self.fromYear = fromYear
-    self.link = "\(timetableDirectoryListing)/\(fromYear.rawValue)/\(fileName)"
+
+    // force unwrap since the URL is always going to be correct.
+    self.url = URL(string: "\(timetableDirectoryListing)/\(fromYear.rawValue)/\(fileName)")!
 
     // file name: A{Year}_S{weekNumber}.pdf
-    let weekString = fileName.replacingOccurrences(
+    let week = fileName.replacingOccurrences(
       of: "(A(.*)_S)|(.pdf)", with: "", options: .regularExpression)
-    self.weekNumber = Int(weekString)!
+
+    // force unwrap because the file name is always going to contain
+    // the week number at this position.
+    self.weekNumber = Int(week)!
 
     // date: yyyy-MM-dd HH:mm
     let formatter = DateFormatter()

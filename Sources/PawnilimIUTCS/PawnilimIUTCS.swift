@@ -14,9 +14,9 @@ public func getTimetables(from year: TimetableYear) async throws -> [OnlineTimet
     throw URLError(.cannotDecodeContentData)
   }
 
-  // Match the file name and the date from the listing.
+  // Match the file name and the date from the listing (file name in 2nd <td>, date in 3rd <td>).
   let pattern =
-    #"<td><a href=\"(A[123]_S\d+\.pdf)\">.*?<\/a><\/td><td align=\"right\">(\d{4}-\d{2}-\d{2} \d{2}:\d{2})\s<\/td>"#
+    #"<tr><td.*?><img.*?></td><td><a href=\"(A[123]_S\d+\.pdf)\">.*?</a></td><td align=\"right\">(\d{4}-\d{2}-\d{2} \d{2}:\d{2})\s*</td>"#
   let regex = try NSRegularExpression(pattern: pattern, options: [])
   let nsrange = NSRange(html.startIndex..<html.endIndex, in: html)
   let matches = regex.matches(in: html, options: [], range: nsrange)
@@ -37,6 +37,20 @@ public func getTimetables(from year: TimetableYear) async throws -> [OnlineTimet
 
   // Sort them by date, since `OnlineTimetableFileEntry` is implementing the `Comparable` protocol.
   return entries.sorted()
+}
+
+public func getTimetableFor(week: Int, entries: [OnlineTimetableFileEntry])
+  -> OnlineTimetableFileEntry?
+{
+  guard
+    let entry = entries.first(where: { entry in
+      entry.weekNumber == week
+    })
+  else {
+    return nil
+  }
+
+  return entry
 }
 
 // let elements = try parsePDF(from: URL(fileURLWithPath: path))

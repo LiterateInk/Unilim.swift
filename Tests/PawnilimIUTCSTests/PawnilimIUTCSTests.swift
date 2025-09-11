@@ -13,8 +13,22 @@ struct PawnilimIUTCSTests {
     let timetable = try parseTimetable(from: pdfURL)
     #expect(!timetable.lessons.isEmpty)
   }
+
+  @Test func getTimetablesAsyncTest() async throws {
+    let entries = try await getTimetables(from: .a1)
+    guard let entry = getTimetableFor(week: 1, entries: entries) else {
+      throw TestError.directoryListingEmpty
+    }
+
+    print(entry)
+    print(try parseTimetable(from: entry.url))
+
+    // #expect(!timetables.isEmpty)
+    // #expect(timetables.allSatisfy { $0.fromYear == .a1 })
+  }
 }
 
 enum TestError: Error {
   case resourceNotFound
+  case directoryListingEmpty
 }
