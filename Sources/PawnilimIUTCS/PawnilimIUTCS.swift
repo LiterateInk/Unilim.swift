@@ -1,5 +1,43 @@
-import CoreGraphics
 import Foundation
+
+/// Get timetable entries for a given study year.
+/// We do this by reading entries in the directory listing from the endpoint.
+public func getTimetables(from year: TimetableYear) async throws -> [OnlineTimetableFileEntry] {
+  let url = "\(timetableDirectoryListing)/\(year.rawValue)"
+  guard let url = URL(string: url) else {
+    throw URLError(.badURL)
+  }
+
+  // Request the directory listing and read as raw HTML.
+  let (data, _) = try await URLSession.shared.data(from: url)
+  guard let html = String(data: data, encoding: .utf8) else {
+    throw URLError(.cannotDecodeContentData)
+  }
+
+  // Match the file name and the date from the listing.
+  let pattern =
+    #"<td><a href=\"(A[123]_S\d+\.pdf)\">.*?<\/a><\/td><td align=\"right\">(\d{4}-\d{2}-\d{2} \d{2}:\d{2})\s<\/td>"#
+  let regex = try NSRegularExpression(pattern: pattern, options: [])
+  let nsrange = NSRange(html.startIndex..<html.endIndex, in: html)
+  let matches = regex.matches(in: html, options: [], range: nsrange)
+
+  // Retrieve entries from the listing!
+  var entries: [OnlineTimetableFileEntry] = []
+  for match in matches {
+    guard match.numberOfRanges == 3,
+      let fileNameRange = Range(match.range(at: 1), in: html),
+      let dateRange = Range(match.range(at: 2), in: html)
+    else {
+      continue
+    }
+    let fileName = String(html[fileNameRange])
+    let rawDate = String(html[dateRange])
+    entries.append(OnlineTimetableFileEntry(fileName: fileName, date: rawDate, fromYear: year))
+  }
+
+  // Sort them by date, since `OnlineTimetableFileEntry` is implementing the `Comparable` protocol.
+  return entries.sorted()
+}
 
 // let elements = try parsePDF(from: URL(fileURLWithPath: path))
 // let timetable = try getTimetable(using: elements)

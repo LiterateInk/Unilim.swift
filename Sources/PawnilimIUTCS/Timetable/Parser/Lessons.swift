@@ -44,7 +44,7 @@ struct TimetableLessonOTHERContent {
 
 struct LessonGroup {
   let main: Int
-  let sub: Subgroup?
+  let sub: TimetableSubGroup?
 }
 
 public struct TimetableLessonCM {

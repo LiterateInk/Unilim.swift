@@ -181,3 +181,24 @@ enum Day: Int, CaseIterable {
     }
   }
 }
+
+public enum TimetableYear: String {
+  case a1 = "A1"
+  case a2 = "A2"
+  case a3 = "A3"
+}
+
+/// Goes from `1` to `8`, skipping the value `6`.
+/// Here's how the main groups are done depending on the year.
+///
+/// - Year 1: 1, 2, 3
+/// - Year 2: 4, 5
+/// - Year 3: 7, 8
+public typealias TimetableMainGroup = Int
+
+public enum TimetableSubGroup: Int {
+  case a = 0
+  case b
+}
+
+let timetableDirectoryListing = "https://edt-iut-info.unilim.fr/edt"

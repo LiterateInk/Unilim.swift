@@ -1,28 +1,15 @@
 struct TimetableGroup {
   /// Main group value.
   /// For example, if you're in G1A, the main group value is `1`.
-  let main: MainGroup
+  let main: TimetableMainGroup
 
-  /// Subgroup value. Where `0` is **A** and `1` is **B**.
+  /// Sub group value. Where `0` is **A** and `1` is **B**.
   /// For example, if you're in G1A, the subgroup value is `0`.
-  let sub: Subgroup
+  let sub: TimetableSubGroup
 
   /// Index of the day in the week, starting from `0`
   /// for **Monday** to `5` for **Saturday**.
   let day: Day
-}
-
-/// Goes from `1` to `8`, skipping the value `6`.
-/// Here's how the main groups are done depending on the year.
-///
-/// - Year 1: 1, 2, 3
-/// - Year 2: 4, 5
-/// - Year 3: 7, 8
-typealias MainGroup = Int
-
-enum Subgroup: Int {
-  case a = 0
-  case b
 }
 
 func getTimetableGroups(_ elements: PDFElements, bounds header: RectBounds) -> [String:
