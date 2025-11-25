@@ -1,6 +1,4 @@
 // swift-tools-version: 6.1
-// The swift-tools-version declares the minimum version of Swift required to build this package.
-
 import PackageDescription
 
 let package = Package(
@@ -12,7 +10,11 @@ let package = Package(
   products: [
     .library(name: "UnilimIUTCS", targets: ["UnilimIUTCS"]),
     .library(name: "UnilimIUT", targets: ["UnilimIUT"]),
-    .library(name: "Unilim", targets: ["Unilim"]),
+    .library(name: "UnilimCAS", targets: ["UnilimCAS"]),
+  ],
+  dependencies: [
+    .package(url: "https://github.com/Vexcited/Rikka.git", from: "0.1.0"),
+    .package(url: "https://github.com/lachlanbell/SwiftOTP.git", from: "3.0.2"),
   ],
   targets: [
     .target(
@@ -27,7 +29,8 @@ let package = Package(
       name: "UnilimIUT",
     ),
     .target(
-      name: "Unilim",
+      name: "UnilimCAS",
+      dependencies: ["Rikka", "SwiftOTP"]
     ),
   ]
 )
