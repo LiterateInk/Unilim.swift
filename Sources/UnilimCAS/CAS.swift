@@ -14,6 +14,7 @@ public struct CAS {
   public enum Error: Swift.Error {
     case noCasToken
     case badPersistence
+    case noLocationHeader
   }
 
   /// Your `lemonldap` session cookie, it is used to perform requests.
@@ -149,5 +150,79 @@ public struct CAS {
     }
 
     throw Error.noCasToken
+  }
+
+  /// Authorize a user through `/oauth2` route.
+  /// - Parameters:
+  ///   - client: OAuth2 client configuration
+  ///   - challenge: Whether to use PKCE challenge, defaults to `false`
+  ///   - state: Optional state parameter
+  /// - Returns: Callback URL with authentication details
+  public func authorize(client: OAuth2, challenge: Bool = false, state: String = "") async throws
+    -> URL
+  {
+    var url = URLComponents(string: CAS.HOST + "/oauth2/authorize")!
+    let scopes = client.scopes.joined(separator: " ")
+
+    var parameters = [
+      URLQueryItem(name: "redirect_uri", value: client.callback),
+      URLQueryItem(name: "client_id", value: client.identifier),
+      URLQueryItem(name: "response_type", value: "code"),
+      URLQueryItem(name: "scope", value: scopes),
+      URLQueryItem(name: "state", value: state),
+    ]
+
+    if challenge {
+      parameters.append(URLQueryItem(name: "code_challenge_method", value: "plain"))
+      parameters.append(URLQueryItem(name: "code_challenge", value: "literateink"))
+    }
+
+    url.queryItems = parameters
+
+    let request = try HttpRequest.Builder(url.url!)
+      .setRedirection(.manual)
+      .setCookie(CAS.COOKIE, self.cookie)
+      .build()
+
+    let response = try await send(request)
+    var location = response.headers.get("location")
+
+    // We're prompted to accept the OAuth2
+    if response.status == 200 && location == nil {
+      let document = try response.toHTML()
+
+      if let confirm = try? document.select("#confirm").attr("value"), !confirm.isEmpty {
+        var body = [
+          "client_id": client.identifier,
+          "confirm": confirm,
+          "redirect_uri": client.callback,
+          "response_type": "code",
+          "scope": scopes,
+          // -> btoa("https://cas.unilim.fr/oauth2")
+          "url": "aHR0cHM6Ly9jYXMudW5pbGltLmZyL29hdXRoMg==",
+        ]
+
+        if challenge {
+          body["code_challenge"] = "literateink"
+          body["code_challenge_method"] = "plain"
+        }
+
+        let request = try HttpRequest.Builder(url.url!)
+          .setMethod(.post)
+          .setRedirection(.manual)
+          .setCookie(CAS.COOKIE, self.cookie)
+          .setFormUrlEncodedBody(body)
+          .build()
+
+        let response = try await send(request)
+        location = response.headers.get("location")
+      }
+    }
+
+    guard let location = location else {
+      throw Error.noLocationHeader
+    }
+
+    return URL(string: location)!
   }
 }
