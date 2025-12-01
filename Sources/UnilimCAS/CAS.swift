@@ -15,6 +15,8 @@ public struct CAS {
     case noCasToken
     case badPersistence
     case noLocationHeader
+    case noCodeFound
+    case invalidAccessToken
   }
 
   /// Your `lemonldap` session cookie, it is used to perform requests.
@@ -224,5 +226,90 @@ public struct CAS {
     }
 
     return URL(string: location)!
+  }
+
+  /// Authenticates to a given service using the CAS as SSO.
+  /// Most of the time it'll generate a ticket URL.
+  /// - Parameters:
+  ///   - service: Service to authenticate to through CAS
+  /// - Returns: An authenticated URL to said service
+  public func service(_ service: Services) async throws -> URL {
+    var url = URLComponents(string: CAS.HOST + "/cas/login")!
+
+    url.queryItems = [
+      URLQueryItem(name: "service", value: service.rawValue),
+      URLQueryItem(name: "gateway", value: "true"),
+    ]
+
+    let request = try HttpRequest.Builder(url.url!)
+      .setRedirection(.manual)
+      .setCookie(CAS.COOKIE, self.cookie)
+      .build()
+
+    let response = try await send(request)
+
+    guard let location = response.headers.get("location") else {
+      throw Error.noLocationHeader
+    }
+
+    return URL(string: location)!
+  }
+
+  /// Retrieves CAS tokens using the authorized OAuth2.0 callback URL.
+  ///
+  /// - Parameters:
+  ///   - callback: URL created with `authorize` method
+  ///   - client: OAuth2 linked to the URL
+  ///   - challenge: Whether PKCE challenge was used, defaults to `false`
+  /// - Returns: OAuth2 tokens
+  public func tokenize(callback: URL, client: OAuth2, challenge: Bool = false) async throws
+    -> Tokens
+  {
+    guard
+      let code = URLComponents(url: callback, resolvingAgainstBaseURL: false)?
+        .queryItems?
+        .first(where: { $0.name == "code" })?
+        .value
+    else {
+      throw Error.noCodeFound
+    }
+
+    var body = [
+      "client_id": client.identifier,
+      "code": code,
+      "grant_type": "authorization_code",
+      "redirect_uri": client.callback,
+    ]
+
+    if challenge {
+      body["code_verifier"] = "literateink"
+    }
+
+    let request = try HttpRequest.Builder(CAS.HOST + "/oauth2/token")
+      .setFormUrlEncodedBody(body)
+      .setMethod(.post)
+      .build()
+
+    let response = try await send(request)
+    return try response.toJSON()
+  }
+
+  /// Retrieves user information from the CAS.
+  ///
+  /// - Parameters
+  ///   - tokens: OAuth2 tokens received in `tokenize`
+  /// - Returns: User details from CAS
+  public func userinfo(tokens: Tokens) async throws -> User {
+    let request = try HttpRequest.Builder(CAS.HOST + "/oauth2/userinfo")
+      .setHeader(HeaderKeys.authorization, "Bearer \(tokens.accessToken)")
+      .build()
+
+    let response = try await send(request)
+
+    if response.status != 200 {
+      throw Error.invalidAccessToken
+    }
+
+    return try response.toJSON()
   }
 }
