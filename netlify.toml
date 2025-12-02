@@ -1,8 +1,0 @@
-[build]
-command = "curl -s https://raw.githubusercontent.com/Vexcited/doccply/refs/heads/main/src/doccply.sh | bash -s -- --target UnilimCAS --target UnilimIUT --target UnilimIUTCS --git LiterateInk/Unilim.swift"
-publish = "docs"
-
-[build.environment]
-SWIFT_VERSION = "6.2"
-CXXFLAGS = "-stdlib=libc++"
-LDFLAGS = "-lc++"

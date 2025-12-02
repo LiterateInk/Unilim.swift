@@ -1,0 +1,33 @@
+name: Documentation to Netlify
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: swift-actions/setup-swift@v3
+
+      - run: |
+          swift package --allow-writing-to-directory docs \
+            generate-documentation --transform-for-static-hosting --disable-indexing --enable-experimental-combined-documentation \
+            --source-service github --source-service-base-url "https://github.com/${{ github.repository }}/blob/main" \
+            --target UnilimCAS --target UnilimIUT --target UnilimIUTCS \
+            --checkout-path "$(pwd)" \
+            --output-path docs
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - run: npm add --global netlify-cli
+
+      - env:
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_TOKEN }}
+        run: netlify deploy --dir=docs --prod
