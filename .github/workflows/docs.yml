@@ -11,7 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - uses: swift-actions/setup-swift@v3
+      - uses: kkebo/setup-swift@fix-ci
 
       - run: |
           swift package --allow-writing-to-directory docs \
