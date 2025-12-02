@@ -3,4 +3,4 @@ command = "curl -s https://raw.githubusercontent.com/Vexcited/doccply/refs/heads
 publish = "docs"
 
 [build.environment]
-SWIFT_VERSION = "6.1"
+SWIFT_VERSION = ""
