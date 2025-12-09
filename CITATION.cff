@@ -1,0 +1,22 @@
+cff-version: 1.2.0
+title: Unilim
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - name: LiterateInk
+    website: "https://literate.ink"
+    email: contact@literate.ink
+repository-code: "https://github.com/LiterateInk/Unilim.swift"
+url: "https://unilim.docs.literate.ink/"
+abstract: >-
+  A purrfect API wrapper for Unilim.
+keywords:
+  - unilim
+  - biome
+  - api
+  - wrapper
+  - student
+  - university
+license: GPL-3.0-or-later
