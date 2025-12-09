@@ -1,5 +1,3 @@
-# Unilim
-
 <img alt="Unilim: A purrfect API wrapper for Unilim" src="https://raw.githubusercontent.com/LiterateInk/Unilim.swift/main/.github/assets/banner.svg" width="100%" />
 
 _This library **is not** affiliated with [University of Limoges](https://unilim.fr/) in any way._
